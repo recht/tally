@@ -21,6 +21,7 @@
 package tally
 
 import (
+	"runtime"
 	"testing"
 	"time"
 )
@@ -90,4 +91,40 @@ func BenchmarkTimerReport(b *testing.B) {
 		start := time.Now()
 		t.Record(time.Since(start))
 	}
+}
+
+func BenchmarkHistogramRecordDuration(b *testing.B) {
+	h := newHistogram(
+		durationHistogramType,
+		"foo",
+		map[string]string{"foo": "bar"},
+		noopCachedReporter{},
+		newBucketStorage(durationHistogramType, MustMakeLinearDurationBuckets(0, time.Second, 20)),
+		nil,
+	)
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for n := 0; n < b.N; n++ {
+		h.RecordDuration(time.Duration(n%20) * time.Second)
+	}
+	runtime.KeepAlive(h)
+}
+
+func BenchmarkHistogramRecordValue(b *testing.B) {
+	h := newHistogram(
+		valueHistogramType,
+		"foo",
+		map[string]string{"foo": "bar"},
+		noopCachedReporter{},
+		newBucketStorage(valueHistogramType, MustMakeLinearValueBuckets(0.0, 1.0, 20)),
+		nil,
+	)
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for n := 0; n < b.N; n++ {
+		h.RecordValue(float64(n % 20))
+	}
+	runtime.KeepAlive(h)
 }

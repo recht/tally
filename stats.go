@@ -23,7 +23,6 @@ package tally
 import (
 	"fmt"
 	"math"
-	"sort"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -373,10 +372,17 @@ func (h *histogram) RecordValue(value float64) {
 	// and emit directly to it. Since we use BucketPairs to derive
 	// buckets there will always be an inclusive bucket as
 	// we always have a math.MaxFloat64 bucket.
-	idx := sort.Search(len(h.buckets), func(i int) bool {
-		return h.buckets[i].valueUpperBound >= value
-	})
-	h.samples[idx].counter.Inc(1)
+	// NB: this is inline sort.Search, as the overhead of calling the lambda is a large portion of total search time.
+	i, j := 0, len(h.buckets)
+	for i < j {
+		z := int(uint(i+j) >> 1)
+		if h.buckets[i].valueUpperBound < value {
+			i = z + 1
+		} else {
+			j = z
+		}
+	}
+	h.samples[i].counter.Inc(1)
 }
 
 func (h *histogram) RecordDuration(value time.Duration) {
@@ -388,10 +394,17 @@ func (h *histogram) RecordDuration(value time.Duration) {
 	// and emit directly to it. Since we use BucketPairs to derive
 	// buckets there will always be an inclusive bucket as
 	// we always have a math.MaxInt64 bucket.
-	idx := sort.Search(len(h.buckets), func(i int) bool {
-		return h.buckets[i].durationUpperBound >= value
-	})
-	h.samples[idx].counter.Inc(1)
+	// NB: this is inline sort.Search, as the overhead of calling the lambda is a large portion of total search time.
+	i, j := 0, len(h.buckets)
+	for i < j {
+		z := int(uint(i+j) >> 1)
+		if h.buckets[i].durationUpperBound < value {
+			i = z + 1
+		} else {
+			j = z
+		}
+	}
+	h.samples[i].counter.Inc(1)
 }
 
 func (h *histogram) Start() Stopwatch {

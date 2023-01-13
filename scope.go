@@ -264,7 +264,6 @@ func (s *scope) reportRegistry() {
 }
 
 func (s *scope) Counter(name string) Counter {
-	name = s.sanitizer.Name(name)
 	if c, ok := s.counter(name); ok {
 		return c
 	}
@@ -279,7 +278,7 @@ func (s *scope) Counter(name string) Counter {
 	var cachedCounter CachedCount
 	if s.cachedReporter != nil {
 		cachedCounter = s.cachedReporter.AllocateCounter(
-			s.fullyQualifiedName(name),
+			s.fullyQualifiedName(s.sanitizer.Name(name)),
 			s.tags,
 		)
 	}
@@ -300,7 +299,6 @@ func (s *scope) counter(sanitizedName string) (Counter, bool) {
 }
 
 func (s *scope) Gauge(name string) Gauge {
-	name = s.sanitizer.Name(name)
 	if g, ok := s.gauge(name); ok {
 		return g
 	}
@@ -315,7 +313,7 @@ func (s *scope) Gauge(name string) Gauge {
 	var cachedGauge CachedGauge
 	if s.cachedReporter != nil {
 		cachedGauge = s.cachedReporter.AllocateGauge(
-			s.fullyQualifiedName(name), s.tags,
+			s.fullyQualifiedName(s.sanitizer.Name(name)), s.tags,
 		)
 	}
 
@@ -335,7 +333,6 @@ func (s *scope) gauge(name string) (Gauge, bool) {
 }
 
 func (s *scope) Timer(name string) Timer {
-	name = s.sanitizer.Name(name)
 	if t, ok := s.timer(name); ok {
 		return t
 	}
@@ -350,7 +347,7 @@ func (s *scope) Timer(name string) Timer {
 	var cachedTimer CachedTimer
 	if s.cachedReporter != nil {
 		cachedTimer = s.cachedReporter.AllocateTimer(
-			s.fullyQualifiedName(name), s.tags,
+			s.fullyQualifiedName(s.sanitizer.Name(name)), s.tags,
 		)
 	}
 
@@ -371,7 +368,6 @@ func (s *scope) timer(sanitizedName string) (Timer, bool) {
 }
 
 func (s *scope) Histogram(name string, b Buckets) Histogram {
-	name = s.sanitizer.Name(name)
 	if h, ok := s.histogram(name); ok {
 		return h
 	}
@@ -395,13 +391,13 @@ func (s *scope) Histogram(name string, b Buckets) Histogram {
 	var cachedHistogram CachedHistogram
 	if s.cachedReporter != nil {
 		cachedHistogram = s.cachedReporter.AllocateHistogram(
-			s.fullyQualifiedName(name), s.tags, b,
+			s.fullyQualifiedName(s.sanitizer.Name(name)), s.tags, b,
 		)
 	}
 
 	h := newHistogram(
 		htype,
-		s.fullyQualifiedName(name),
+		s.fullyQualifiedName(s.sanitizer.Name(name)),
 		s.tags,
 		s.reporter,
 		s.bucketCache.Get(htype, b),

@@ -53,11 +53,11 @@ const (
 )
 
 var (
-	ttypeToCompactType map[TType]tCompactType
+	ttypeToCompactType map[uint32]tCompactType
 )
 
 func init() {
-	ttypeToCompactType = map[TType]tCompactType{
+	ttypeToCompactType = map[uint32]tCompactType{
 		STOP:   STOP,
 		BOOL:   COMPACT_BOOLEAN_TRUE,
 		BYTE:   COMPACT_BYTE,
@@ -811,5 +811,6 @@ func (p *TCompactProtocol) getTType(t tCompactType) (TType, error) {
 
 // Given a TType value, find the appropriate TCompactProtocol.Types constant.
 func (p *TCompactProtocol) getCompactType(t TType) tCompactType {
-	return ttypeToCompactType[t]
+	return ttypeToCompactType[uint32(t)]
 }
+

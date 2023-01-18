@@ -811,6 +811,32 @@ func (p *TCompactProtocol) getTType(t tCompactType) (TType, error) {
 
 // Given a TType value, find the appropriate TCompactProtocol.Types constant.
 func (p *TCompactProtocol) getCompactType(t TType) tCompactType {
-	return ttypeToCompactType[uint32(t)]
-}
+	switch t {
+	case STOP:
+		return STOP
+	case BOOL:
+		return COMPACT_BOOLEAN_TRUE
+	case BYTE:
+		return COMPACT_BYTE
+	case I16:
+		return COMPACT_I16
+	case I32:
+		return COMPACT_I32
+	case I64:
+		return COMPACT_I64
+	case DOUBLE:
+		return COMPACT_DOUBLE
+	case STRING:
+		return COMPACT_BINARY
+	case LIST:
+		return COMPACT_LIST
+	case SET:
+		return COMPACT_SET
+	case MAP:
+		return COMPACT_MAP
+	case STRUCT:
+		return COMPACT_STRUCT
+	}
 
+	return 0
+}
